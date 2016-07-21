@@ -17,17 +17,10 @@
 #define LOG_TAG "Parcel"
 //#define LOG_NDEBUG 0
 
-#include <errno.h>
+#include <binder/Parcel.h>
 #include <fcntl.h>
-#include <inttypes.h>
 #include <pthread.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
+
 
 #include <binder/Binder.h>
 #include <binder/BpBinder.h>
@@ -46,6 +39,15 @@
 
 #include <private/binder/binder_module.h>
 #include <private/binder/Static.h>
+
+#include <inttypes.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #ifndef INT32_MAX
 #define INT32_MAX ((int32_t)(2147483647))
@@ -216,8 +218,11 @@ static void release_object(const sp<ProcessState>& proc,
                         }
                     }
                 }
-
+            close(obj.handle);
+#ifdef DISABLE_ASHMEM_TRACKING
+            } else if (obj.cookie != 0) {
                 close(obj.handle);
+#endif
             }
             return;
         }
